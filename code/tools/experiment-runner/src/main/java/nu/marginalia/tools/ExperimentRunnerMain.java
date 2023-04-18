@@ -3,6 +3,9 @@ package nu.marginalia.tools;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
 import nu.marginalia.converting.ConverterModule;
+import nu.marginalia.loading.ConvertedDomainReader;
+import nu.marginalia.model.gson.GsonFactory;
+import nu.marginalia.process.log.WorkLog;
 import nu.marginalia.service.module.DatabaseModule;
 import nu.marginalia.tools.experiments.*;
 import plan.CrawlPlanLoader;
@@ -16,7 +19,7 @@ public class ExperimentRunnerMain {
 
     private static Map<String, Class<? extends Experiment>> experiments = Map.of(
             "test", TestExperiment.class,
-            "adblock", AdblockExperiment.class,
+            "adblock", AdblockCrawlDataExperiment.class,
             "topic", TopicExperiment.class,
             "sentence-statistics", SentenceStatisticsExperiment.class,
             "site-statistics", SiteStatisticsExperiment.class
@@ -42,18 +45,36 @@ public class ExperimentRunnerMain {
 
         Experiment experiment = injector.getInstance(experiments.get(args[1]));
 
+        if (experiment instanceof CrawlDataExperiment crawlDataExperiment) {
 
-        Map<String, String> idToDomain = new HashMap<>();
-        plan.forEachCrawlingSpecification(spec -> {
-            idToDomain.put(spec.id, spec.domain);
-        });
+            Map<String, String> idToDomain = new HashMap<>();
+            plan.forEachCrawlingSpecification(spec -> {
+                idToDomain.put(spec.id, spec.domain);
+            });
 
-        plan.forEachCrawledDomain(
-                id -> experiment.isInterested(idToDomain.get(id)),
-                experiment::process
-        );
 
-        experiment.onFinish();
+            plan.forEachCrawledDomain(
+                    id -> crawlDataExperiment.isInterested(idToDomain.get(id)),
+                    crawlDataExperiment::process
+            );
+
+            crawlDataExperiment.onFinish();
+        }
+        else if (experiment instanceof ProcessedDataExperiment processedDataExperiment) {
+            var logFile = plan.process.getLogFile();
+            ConvertedDomainReader domainReader = new ConvertedDomainReader(GsonFactory.get());
+
+            WorkLog.readLog(logFile, entry -> {
+                Path destDir = plan.getProcessedFilePath(entry.path());
+                try {
+                    var data = domainReader.read(destDir, entry.cnt());
+                    processedDataExperiment.process(data);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            });
+            processedDataExperiment.onFinish();;
+        }
 
     }
 }

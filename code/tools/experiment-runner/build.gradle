@@ -31,11 +31,15 @@ dependencies {
     implementation project(':code:libraries:term-frequency-dict')
     implementation project(':code:libraries:big-string')
     implementation project(':code:processes:converting-process')
+    implementation project(':code:processes:loading-process')
     implementation project(':code:process-models:crawling-model')
+    implementation project(':code:process-models:converting-model')
 
+    implementation project(':code:features-convert:keyword-extraction')
     implementation project(':code:features-convert:adblock')
     implementation project(':code:features-convert:topic-detection')
 
+    implementation project(':third-party:mallet')
     implementation libs.lombok
     annotationProcessor libs.lombok
     implementation libs.bundles.slf4j
@@ -45,6 +49,7 @@ dependencies {
     implementation libs.jsoup
     implementation libs.trove
     implementation libs.fastutil
+    implementation libs.bundles.gson
 
     implementation libs.bundles.nlp
     implementation libs.commons.lang3

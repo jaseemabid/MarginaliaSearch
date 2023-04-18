@@ -73,6 +73,7 @@ include 'third-party:symspell'
 include 'third-party:rdrpostagger'
 include 'third-party:uppend'
 include 'third-party:openzim'
+include 'third-party:mallet'
 include 'third-party:count-min-sketch'
 include 'third-party:monkey-patch-opennlp'
 

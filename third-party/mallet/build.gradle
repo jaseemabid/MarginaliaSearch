@@ -1,0 +1,20 @@
+plugins {
+    id 'java'
+}
+
+java {
+    toolchain {
+        languageVersion.set(JavaLanguageVersion.of(17))
+    }
+}
+
+dependencies {
+    implementation 'org.apache-extras.beanshell:bsh:2.0b6'
+    implementation 'com.carrotsearch:hppc:0.7.1'
+    implementation 'com.google.errorprone:error_prone_annotations:2.18.0'
+
+}
+
+test {
+    useJUnitPlatform()
+}
