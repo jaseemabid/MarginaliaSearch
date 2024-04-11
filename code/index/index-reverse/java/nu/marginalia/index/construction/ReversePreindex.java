@@ -191,6 +191,12 @@ public class ReversePreindex {
 
         mergingSegment.force();
 
+        long end = mergingIter.startOffset;
+        long sizeLongs = 2 * mergingSegment.totalSize();
+        if (end != sizeLongs) {
+            throw new IllegalStateException("Impossible state");
+        }
+
         // We may have overestimated the size of the merged docs size in the case there were
         // duplicates in the data, so we need to shrink it to the actual size we wrote.
 
@@ -237,7 +243,7 @@ public class ReversePreindex {
 
         mergedDocuments.force();
 
-        long beforeSize = mergedDocuments.size();
+        long beforeSize = mergedDocuments.size() * 8;
         long afterSize = sizeLongs * 8;
         if (beforeSize != afterSize) {
             mergedDocuments.close();

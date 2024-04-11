@@ -38,9 +38,7 @@ public class ReverseIndexConstructor {
         this.tmpDir = tmpDir;
     }
 
-    public void createReverseIndex(ProcessHeartbeat processHeartbeat,
-                                   String processName,
-                                   Path sourceBaseDir) throws IOException
+    public void createReverseIndex(Path sourceBaseDir) throws IOException
     {
         var inputs = IndexJournalFileNames.findJournalFiles(sourceBaseDir);
         if (inputs.isEmpty()) {
@@ -48,28 +46,11 @@ public class ReverseIndexConstructor {
             return;
         }
 
-        try (var heartbeat = processHeartbeat.createProcessTaskHeartbeat(CreateReverseIndexSteps.class, processName)) {
-
-            heartbeat.progress(CreateReverseIndexSteps.CONSTRUCT);
-
-            try (var preindexHeartbeat = processHeartbeat.createAdHocTaskHeartbeat("constructPreindexes")) {
-
-                AtomicInteger progress = new AtomicInteger(0);
-                inputs
-                    .parallelStream()
-                    .map(in -> {
-                        preindexHeartbeat.progress("PREINDEX/MERGE", progress.incrementAndGet(), inputs.size());
-                        return construct(in);
-                    })
-                    .reduce(this::merge)
-                    .ifPresent((index) -> {
-                        heartbeat.progress(CreateReverseIndexSteps.FINALIZE);
-                        finalizeIndex(index);
-                        heartbeat.progress(CreateReverseIndexSteps.FINISHED);
-                    });
-            }
-            heartbeat.progress(CreateReverseIndexSteps.FINISHED);
-        }
+        inputs
+            .parallelStream()
+            .map(this::construct)
+            .reduce(this::merge)
+            .ifPresent(this::finalizeIndex);
     }
 
     @SneakyThrows
