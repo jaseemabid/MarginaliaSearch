@@ -28,16 +28,16 @@ with both JDK 21 and 22 installed for its sake... )
 $ mkdir output-dir
 ```
 
-7. Unpack index-construction-process.tar and run
+7. Unpack index-construction-process.tar
+
+8. Run
 
 ```
 $ bin/index-construction-process test-data-jvm-bug/ output-dir/
 ```
 
-This should run the affected process.  With any "luck", it should fail
-with an exception like
-
-java.lang.IllegalStateException: Impossible state
+This runs the affected process.  With any "luck", it should fail
+with an exception like `java.lang.IllegalStateException: Impossible state`
 
 This doesn't always happen, so you may need to run it a few times.
 Total run time should be about 15 minutes, and it may need a decent
